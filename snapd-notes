@@ -1,0 +1,91 @@
+. cmd/snap/main.go is called, cli args passed to:
+. cmd/snap/cmd.go, which executes the command __inside the core snap???__
+... somehow or another, it gets here:
+. cmd/snap/cmd_connect.go,
+    which parses args
+    and calls Execute interface which calls Client.Connect from here:
+. client/interfaces.go
+    which takes the args to connect, calling calling.performanInterfaceAction with json of args
+    which does an async request to daemon, passing the json
+
+###### SERVER SIDE #############
+. daemon/api.go
+    changeInterfaces: calls ifaceState.Connect/Disconnect as appropriate
+. overlord/ifacestate/ifacemgr.go
+    ifaceState.Connect/Disconnect generates state.Task which contains:
+        the action -- connect/disconnect
+        a string summary of the task -- eg, "connect blahplug to blahslot"
+        the slot
+        the plug
+    then adds it to a state.TaskSet, which is returned
+. daemon/api.go
+    back to changeInterfaces:
+    add a state.TaskSet to a state.NewChange
+        -- it looks like the change is basically json:
+            creates change, which includes the sring summary and the interfaces to be dis/connected
+    the change ID gets returned in an AsyncResponse... so when the fuck does the change actually happen?
+
+    ... current __theory__ is that once change.AddAll adds the task, handler takes off with it
+
+### INTERFACE EVENT HANDLERS ####
+. overlord/ifacestate/ifacemgr.go
+    looks like Manager adds handlers for connect, disconnect, etc.
+    runner.AddHandler("connect", m.doConnect, nil)
+. overlord/ifacestate/handlers.go
+    doConnect -- looks like this actually does the connection
+        calls setupSnapSecurity
+. overlord/ifacestate/helpers.go
+    setupSnapSecurity
+        iterates through all the various interface "backends"
+        calls backend.Setup(snapInfo, devMode, repo)
+. interfaces/apparmor/backend.go
+    Setup:
+        snippets, err := repo.SecuritySnippetsForSnap(snapName, interfaces.SecurityAppArmor)
+. interfaces/repo.go
+        SecuritySnippetsForSnap calls securitySnippetsForSnap
+            which checks for and returns all permissions that a connected plug needs (see interfaces/builtin/common.go, ConnectedPlugSnippet, returns iface.connectedPlugAppArmor)
+... back to previous:
+    still in interfaces/apparmor/backend.go.Setup:
+        backend.combineSnippets(snapInfo, devMode, snippets)
+        # looks like any call to change interfaces reloads ALL:
+        calls reloadProfiles(all)
+            calls LoadProfile
+. interfaces/apparmor/apparmor.go
+    LoadProfile
+        "apparmor_parser", "--replace", "--write-cache", "-O",
+        "no-expr-simplify", fmt.Sprintf("--cache-loc=%s", dirs.AppArmorCacheDir),
+
+
+type Interface interface {
+    Name() string
+    SanitizePlug(plug *Plug) error
+    SanitizeSlot(slot *Slot) error
+    PermanentPlugSnippet(plug *Plug, securitySystem SecuritySystem) ([]byte, error)
+    ConnectedPlugSnippet(plug *Plug, slot *Slot, securitySystem SecuritySystem) ([]byte, error)
+    PermanentSlotSnippet(slot *Slot, securitySystem SecuritySystem) ([]byte, error)
+    ConnectedSlotSnippet(plug *Plug, slot *Slot, securitySystem SecuritySystem) ([]byte, error)
+    AutoConnect() bool
+}
+
+type commonInterface struct {
+    name                  string
+    connectedPlugAppArmor string
+    connectedPlugSecComp  string
+    reservedForOS         bool
+    autoConnect           bool
+}
+
+
+##### create-user stuff:
+
+# CLIENT
+. cmd/snap/cmd_create_user.go
+  takes email address as argument
+  creates cmdCreateUser struct, 
+    whose Execute method instantiates Client()
+    and calls cli.CreateUser(email adderss)
+. client/client.go
+  client.doSync("POST", "/v2/create-user" ... )
+# SERVER
+. daemon/api.go
+  postCreateUser

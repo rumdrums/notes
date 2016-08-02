@@ -88,4 +88,37 @@ type commonInterface struct {
   client.doSync("POST", "/v2/create-user" ... )
 # SERVER
 . daemon/api.go
+  postCreateUser calls
+    uid = postCreateUserUcrednetGetUID(r.RemoteAddr)
+    v := storeUserInfo(createData.EMail)
+      calls store/userinfo.go.UserInfo
+. store/userinfo.go
+  UserInfo
+  gets public user data from canonical site and returns it in User struct
+. back to daemon/api.go
   postCreateUser
+    tries to add user to os using retrieved canonical store credentials like so:
+    osutilAddExtraUser(v.Username, v.SSHKeys), aka osutil.AddExtraUser
+### code weakness
+  error messages don't distingusih between issue getting credentials 
+  from store vs adding user
+###
+
+. osutil/user.go
+  AddExtraUser
+    gecos := "created by snapd"
+    cmd := exec.Command("adduser", "--gecos", gecos, "--extrausers", "--disabled-password", name)
+
+
+### test error:
+FAIL: i18n_test.go:41: i18nTestSuite.SetUpTest
+
+i18n_test.go:45:
+    makeMockTranslations(c, localeDir)
+i18n_test.go:94:
+    c.Assert(err, IsNil)
+... value *exec.Error = &exec.Error{Name:"msgfmt", Err:(*errors.errorString)(0xc820012510)} ("exec: \"msgfmt\": executable file not found in $PATH")
+
+# fixed by:
+sudo apt-get install gettext
+

@@ -1,0 +1,8 @@
+Permissions
+. initialized with set of needs, any of which must be present in order to gain access
+. permission.can()
+  -- calls self.require().can()
+  -- self.require passes itself (the permission) as argument to IdentityContext constructor
+  -- IdentityContext.identity is g.identity
+  -- IdentityContext.can() calls self.identity.can(permission)
+  -- Identity.can passes itself permission.allows, which simply checks to see if the permission's needs are in the needs that the identity provides

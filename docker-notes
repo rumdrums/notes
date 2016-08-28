@@ -1,0 +1,30 @@
+## initial run of 'docker' command:
+
+# CLIENT
+cmd/docker/docker.go
+	calls cobraadaptor.NewCobraAdaptor
+	which parses the command, which is here:
+	./api/client/network/cmd.go, which add this parser:
+		newCreateCommand
+./api/client/network/create.go
+	newCreateCommand returns a call to runCreate
+	runCreate does some network stuff
+	and calls
+	client.NetworkCreate, which is here:
+./vendor/src/github.com/docker/engine-api/client/network_create.go
+	sends POST to /networks/create
+	
+# SERVER
+. api/server/router/network/network.go
+	route defined here /networks/create calls *networkRouter.postNetworkCreate
+. api/server/router/network/network_routes.go
+	*networkRouter.postNetworkCreate
+	calls *networkRouter.backend.CreateNetwork 
+
+	so what is the Backend interface exactly (defined in ./api/server/router/network/backend.go)
+	... in context of creating a bridge, it's here:
+./vendor/src/github.com/docker/libnetwork/drivers/bridge/bridge.go
+	CreateNetwork calls createNetwork
+	which does a lot of shit
+
+

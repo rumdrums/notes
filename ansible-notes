@@ -1,0 +1,2 @@
+# docker_container is:
+./lib/ansible/modules/core/cloud/docker/docker_container.py

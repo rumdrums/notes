@@ -1,0 +1,280 @@
+. cmd/snap/main.go is called, cli args passed to:
+. cmd/snap/cmd.go, which executes the command __inside the core snap???__
+... somehow or another, it gets here:
+. cmd/snap/cmd_connect.go,
+    which parses args
+    and calls Execute interface which calls Client.Connect from here:
+. client/interfaces.go
+    which takes the args to connect, calling calling.performanInterfaceAction with json of args
+    which does an async request to daemon, passing the json
+
+###### SERVER SIDE #############
+. daemon/api.go
+    changeInterfaces: calls ifaceState.Connect/Disconnect as appropriate
+. overlord/ifacestate/ifacemgr.go
+    ifaceState.Connect/Disconnect generates state.Task which contains:
+        the action -- connect/disconnect
+        a string summary of the task -- eg, "connect blahplug to blahslot"
+        the slot
+        the plug
+    then adds it to a state.TaskSet, which is returned
+. daemon/api.go
+    back to changeInterfaces:
+    add a state.TaskSet to a state.NewChange
+        -- it looks like the change is basically json:
+            creates change, which includes the sring summary and the interfaces to be dis/connected
+    the change ID gets returned in an AsyncResponse... so when the fuck does the change actually happen?
+
+    ... current __theory__ is that once change.AddAll adds the task, handler takes off with it
+
+### INTERFACE EVENT HANDLERS ####
+. overlord/ifacestate/ifacemgr.go
+    looks like Manager adds handlers for connect, disconnect, etc.
+    runner.AddHandler("connect", m.doConnect, nil)
+. overlord/ifacestate/handlers.go
+    doConnect -- looks like this actually does the connection
+        calls setupSnapSecurity
+. overlord/ifacestate/helpers.go
+    setupSnapSecurity
+        iterates through all the various interface "backends"
+        calls backend.Setup(snapInfo, devMode, repo)
+. interfaces/apparmor/backend.go
+    Setup:
+        snippets, err := repo.SecuritySnippetsForSnap(snapName, interfaces.SecurityAppArmor)
+. interfaces/repo.go
+        SecuritySnippetsForSnap calls securitySnippetsForSnap
+            which checks for and returns all permissions that a connected plug needs (see interfaces/builtin/common.go, ConnectedPlugSnippet, returns iface.connectedPlugAppArmor)
+... back to previous:
+    still in interfaces/apparmor/backend.go.Setup:
+        backend.combineSnippets(snapInfo, devMode, snippets)
+        # looks like any call to change interfaces reloads ALL:
+        calls reloadProfiles(all)
+            calls LoadProfile
+. interfaces/apparmor/apparmor.go
+    LoadProfile
+        "apparmor_parser", "--replace", "--write-cache", "-O",
+        "no-expr-simplify", fmt.Sprintf("--cache-loc=%s", dirs.AppArmorCacheDir),
+
+
+type Interface interface {
+    Name() string
+    SanitizePlug(plug *Plug) error
+    SanitizeSlot(slot *Slot) error
+    PermanentPlugSnippet(plug *Plug, securitySystem SecuritySystem) ([]byte, error)
+    ConnectedPlugSnippet(plug *Plug, slot *Slot, securitySystem SecuritySystem) ([]byte, error)
+    PermanentSlotSnippet(slot *Slot, securitySystem SecuritySystem) ([]byte, error)
+    ConnectedSlotSnippet(plug *Plug, slot *Slot, securitySystem SecuritySystem) ([]byte, error)
+    AutoConnect() bool
+}
+
+type commonInterface struct {
+    name                  string
+    connectedPlugAppArmor string
+    connectedPlugSecComp  string
+    reservedForOS         bool
+    autoConnect           bool
+}
+
+
+##### create-user stuff:
+
+# CLIENT
+. cmd/snap/cmd_create_user.go
+  takes email address as argument
+  creates cmdCreateUser struct, 
+    whose Execute method instantiates Client()
+    and calls cli.CreateUser(email adderss)
+. client/client.go
+  client.doSync("POST", "/v2/create-user" ... )
+# SERVER
+. daemon/api.go
+  postCreateUser calls
+    uid = postCreateUserUcrednetGetUID(r.RemoteAddr)
+    v := storeUserInfo(createData.EMail)
+      calls store/userinfo.go.UserInfo
+. store/userinfo.go
+  UserInfo
+  gets public user data from canonical site and returns it in User struct
+. back to daemon/api.go
+  postCreateUser
+    tries to add user to os using retrieved canonical store credentials like so:
+    osutilAddExtraUser(v.Username, v.SSHKeys), aka osutil.AddExtraUser
+### code weakness
+  error messages don't distingusih between issue getting credentials 
+  from store vs adding user
+###
+
+. osutil/user.go
+  AddExtraUser
+    gecos := "created by snapd"
+    cmd := exec.Command("adduser", "--gecos", gecos, "--extrausers", "--disabled-password", name)
+
+
+### test error:
+FAIL: i18n_test.go:41: i18nTestSuite.SetUpTest
+
+i18n_test.go:45:
+    makeMockTranslations(c, localeDir)
+i18n_test.go:94:
+    c.Assert(err, IsNil)
+... value *exec.Error = &exec.Error{Name:"msgfmt", Err:(*errors.errorString)(0xc820012510)} ("exec: \"msgfmt\": executable file not found in $PATH")
+
+# fixed by:
+sudo apt-get install gettext
+
+
+
+
+#### user test:
+pushd osutil && \
+  go test -check.f $github.com/snapcore/snapd/osutil_test
+popd
+
+##########3### Fails:
+FAIL: user_test.go:40: createUserSuite.TestAddExtraUser
+
+user_test.go:53:
+    c.Assert(err, check.IsNil)
+... value *errors.errorString = &errors.errorString{s:"error converting uid: strconv.ParseInt: parsing \"\": invalid syntax"} ("error converting uid: strconv.ParseInt: parsing \"\": invalid syntax")
+
+
+# with bash -X
+FAIL: user_test.go:40: createUserSuite.TestAddExtraUser
+
+user_test.go:55:
+    c.Assert(err, check.IsNil)
+... value *errors.errorString = &errors.errorString{s:"cannot set /tmp/check-5436099478104293176/0/.ssh ownership: chown /tmp/check-5436099478104293176/0/.ssh: operation not permitted"} ("cannot set /tmp/check-5436099478104293176/0/.ssh ownership: chown /tmp/check-5436099478104293176/0/.ssh: operation not permitted")
+
+OOPS: 72 passed, 1 FAILED
+--- FAIL: Test (0.12s)
+FAIL
+coverage: 81.1% of statements
+exit status 1
+FAIL	github.com/snapcore/snapd/osutil	0.125s
++ store_exit_code
++ EXIT_CODE=1
++ true
++ endmsg
++ '[' 1 -eq 0 ']'
++ p=failure.txt
++ m='Crushing failure and despair.'
++ echo
+
++ '[' -t 1 -a -z 1 ']'
++ echo 'Crushing failure and despair.'
+Crushing failure and despair.
++ exit_with_exit_code
++ exit 1
+
+###############
+. to run above test:
+sudo go test -tags=excludeintegration -v github.com/snapcore/snapd/osutil
+
+
+# output:
+################################
+sudo GOPATH=/home/ubuntu/go go test -tags=excludeintegration -v github.com/snapcore/snapd/osutil
+=== RUN   Test
+
+----------------------------------------------------------------------
+FAIL: io_test.go:77: AtomicWriteTestSuite.TestAtomicWriteFileSymlinkNoFollow
+
+io_test.go:88:
+    c.Assert(err, NotNil)
+... value = nil
+
+
+----------------------------------------------------------------------
+FAIL: io_test.go:77: AtomicWriteTestSuite.TestAtomicWriteFileSymlinkNoFollow
+
+io_test.go:88:
+    c.Assert(err, NotNil)
+... value = nil
+
+OOPS: 71 passed, 2 FAILED
+--- FAIL: Test (0.16s)
+FAIL
+exit status 1
+FAIL	github.com/snapcore/snapd/osutil	0.169s
+################################
+
+
+
+
+
+
+
+
+
+
+
+#####################################################################
+###################### tests for CreateUseronClassic stuff:
+#####################################################################
+----------------------------------------------------------------------
+FAIL: api_test.go:3117: apiSuite.TestPostCreateUser
+
+api_test.go:3147:
+    c.Check(rsp.Type, check.Equals, ResponseTypeSync)
+... obtained daemon.ResponseType = "error"
+... expected daemon.ResponseType = "sync"
+
+
+----------------------------------------------------------------------
+FAIL: api_test.go:3092: apiSuite.TestPostCreateUserNoSSHKeys
+
+api_test.go:3114:
+    c.Check(rsp.Result.(*errorResult).Message, check.Matches, "cannot create user for popper@lse.ac.uk: no ssh keys found")
+... value string = "cannot use create-user on classic"
+... regex string = "cannot create user for popper@lse.ac.uk: no ssh keys found"
+
+
+----------------------------------------------------------------------
+FAIL: api_test.go:3080: apiSuite.TestPostCreateUserOnClassic
+
+api_test.go:3089:
+    c.Check(rsp.Result.(*errorResult).Message, check.Matches, "cannot use create-user on classic")
+... value string = "cannot get ucrednet uid: no uid found"
+... regex string = "cannot use create-user on classic"
+
+OOPS: 119 passed, 1 skipped, 3 FAILED
+--- FAIL: Test (18.50s)
+FAIL
+coverage: 79.8% of statements
+exit status 1
+FAIL	github.com/snapcore/snapd/daemon	18.527s
+
+###########################################################################
+###################################################################################################
+
+client-side request handling
+.client/client.go
+	-- requests distill down to passing a url and method to client.doSync or client.doAsync,
+		which in turn call client.do
+		client.doSync returns a 'response', which looks like this:
+#####
+type response struct {
+    Result     json.RawMessage `json:"result"`
+    Status     string          `json:"status"`
+    StatusCode int             `json:"status-code"`
+    Type       string          `json:"type"`
+    Change     string          `json:"change"`
+
+    ResultInfo
+}
+#####
+
+example: listing snaps:
+. cmd/cmd_list.go
+	instantiate client
+	call cli.List
+. client/packages.go
+	calls client.snapsFromPath, passing url:
+	  --  snaps, _, err := client.snapsFromPath("/v2/snaps", nil)
+	client.snapsFromPath calls client.doSync
+
+
+
+########### latest spread test error:
+
+

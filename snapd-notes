@@ -273,8 +273,27 @@ example: listing snaps:
 	  --  snaps, _, err := client.snapsFromPath("/v2/snaps", nil)
 	client.snapsFromPath calls client.doSync
 
+another example: create user:
+. cmd/cmd_create_user.go
+  -- instantiate client (see below for details)
+  -- create CreateUserRequest object, which takes cli args and puts them in a struct
+  -- calls Client.CreateUser(&CreateUserRequest)
+    -- client.CreateUser calls client.doSync
+      -- calls client.do
+        -- calls client.raw, creates the http request, and returns
+           client.doer.Do(req), which actually does the request
+       
+  -- response / error is printed, optionally formatted in json
 
+### snap command Client object:
+cmd/snap/main.go
+. Client is a function defined in this package, which instantiates a client.Client()
+. calling Client() returns client.New(&clientConfig)
 
-########### latest spread test error:
+client type:
+	type Client struct {
+	    baseURL url.URL
+	    doer    doer
+	}
 
 

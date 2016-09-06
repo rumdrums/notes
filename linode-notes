@@ -1,0 +1,64 @@
+### this is pretty much worthless:
+#!/usr/bin/python
+
+from linode import api as linode_api
+import subprocess
+import time
+
+api_key="my-api-key"
+api = linode_api.Api(api_key)
+linodes = api.linode_list()
+
+api.linode_ip_list()
+ips = [ i['IPADDRESS'] for i in api.linode_ip_list() ]
+ip = ips[0]
+
+subprocess.call(["ifdown", "eth0"])
+time.sleep(1)
+new_interfaces_file = """
+	auto eth0
+	allow-hotplug eth0
+
+	iface eth0 inet6 auto
+
+	iface eth0 inet static
+	    address %s/24
+	    gateway %s \n 
+""" % ( ip, ip[:ip.rfind('.')] + '.1' )
+
+with open('/etc/network/interfaces', 'wb') as f:
+  f.write(new_interfaces_file)
+
+
+subprocess.call(["ifup", "eth0"])
+########################
+
+
+###### less worthless:
+#!/usr/bin/python
+
+import subprocess
+import time
+import sys
+
+ip = sys.argv[1]
+subprocess.call(["ifdown", "eth0"])
+time.sleep(1)
+new_interfaces_file = """
+    auto eth0
+    allow-hotplug eth0
+
+    iface eth0 inet6 auto
+
+    iface eth0 inet static
+        address %s/24
+        gateway %s \n
+""" % ( ip, ip[:ip.rfind('.')] + '.1' )
+
+with open('/etc/network/interfaces', 'wb') as f:
+  f.write(new_interfaces_file)
+
+
+subprocess.call(["ifup", "eth0"])
+
+###################################

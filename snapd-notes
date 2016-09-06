@@ -353,5 +353,28 @@ error: symbol `grub_video_fb_get_region' not found.
 2016/08/20 03:03:29 Keeping &{%!s(*spread.linode=&{0xc82007bee0 {0 0} true <nil> map[2217866:true] true [0xc8201d0060 0xc8201d00c0 0xc8201d0120 0xc8201d0180 0xc8201d01e0 0xc8201d0240 0xc8201d02a0 0xc8201d0300 0xc8201d0360 0xc8201d03c0 0xc8201d0420 0xc8201d0480 0xc8201d04e0 0xc8201d0540 0xc8201d05a0 0xc8201d0600 0xc8201d0660 0xc8201d0720 0xc8201d0780 0xc8201d0960] [0xc82044c360 0xc82044c4b0 0xc82044c4e0 0xc82044c570 0xc82044c630 0xc82044c660 0xc82044c690 0xc82044c6f0 0xc82044c750 0xc82044c7e0 0xc82044c810 0xc82044c840 0xc82044c8a0 0xc82044c8d0 0xc82044c930 0xc82044c960 0xc82044c990 0xc82044c9c0 0xc82044c9f0 0xc82044ca20 0xc82044ca50 0xc82044ca80 0xc82044cae0 0xc82044cb10 0xc82044cb40 0xc82044cb70 0xc82044cba0 0xc82044cc00 0xc82044cc30 0xc82044cc60 0xc82044cc90 0xc82044cd20 0xc82044cd80 0xc82044cdb0 0xc82044cde0 0xc82044ce40 0xc82044ce70 0xc82044cea0 0xc82044ced0 0xc82044cf30 0xc82044cf90 0xc82044cfc0 0xc82044cff0 0xc82044d080 0xc82044d0b0 0xc82044d110 0xc82044d140 0xc82044d170 0xc82044d200 0xc82044d230 0xc82044d2c0 0xc82044d2f0 0xc82044d320 0xc82044d350 0xc82044d3b0 0xc82044d3e0 0xc82044d410 0xc82044d440 0xc82044d470 0xc82044d4d0 0xc82044d500 0xc82044d530 0xc82044d590 0xc82044d5f0 0xc82044d620 0xc82044d680 0xc82044d6e0 0xc82044d770 0xc82044d7a0 0xc82044d7d0 0xc82044d800 0xc82044d860 0xc82044d890 0xc82044d8c0 0xc82044d8f0 0xc82044d920 0xc82044d980 0xc82044d9e0 0xc82044da40 0xc82044da70 0xc82044dad0 0xc82044db30 0xc82044dbc0 0xc82044dbf0 0xc82044dc50 0xc82044dc80 0xc82044dce0 0xc82044dd10 0xc82044dd70 0xc82044dda0 0xc82044de00 0xc82044de30 0xc82044de60 0xc82044dec0 0xc82044def0 0xc82044df50 0xc82044df80 0xc82042c030 0xc82042c060 0xc82042c090 0xc82042c0f0 0xc82042c150 0xc82042c180 0xc82042c1b0 0xc82042c210 0xc82042c240 0xc82042c270 0xc82042c2a0 0xc82042c330 0xc82042c360 0xc82042c390 0xc82042c3c0 0xc82042c3f0 0xc82042c420 0xc82042c450 0xc82042c4b0 0xc82042c510 0xc82042c5d0 0xc82042c600 0xc82042c630 0xc82042c660 0xc82042c690 0xc82042c6c0 0xc82042c6f0 0xc82042c720 0xc82042c750 0xc82042c780 0xc82042c810 0xc82042c8a0 0xc82042c8d0 0xc82042c900 0xc82042c930 0xc82042c960 0xc82042c990 0xc82042c9c0 0xc82042c9f0 0xc82042ca20 0xc82042ca50 0xc82042ca80 0xc82042cae0 0xc82042cb40 0xc82042cb70 0xc82042cba0 0xc82042cc00 0xc82042cc30 0xc82042cc60 0xc82042ccc0 0xc82042ccf0 0xc82042cd20 0xc82042cd50 0xc82042cde0 0xc82042ce10 0xc82042ce40 0xc82042ce70 0xb50b80]}) {%!s(int=2217866) linode2217866 %!s(int=2) linode ubuntu-16.04-64-grub 104.237.137.24 %!s(int=3098882) %!s(int=5940772) %!s(int=5940773)}} at 104.237.137.24
 2016/08/20 03:03:29 Reuse with: spread -pass=1a5df8c603f26c6f -keep -reuse=104.237.137.24
 error: unsuccessful run
+=======
+another example: create user:
+. cmd/cmd_create_user.go
+  -- instantiate client (see below for details)
+  -- create CreateUserRequest object, which takes cli args and puts them in a struct
+  -- calls Client.CreateUser(&CreateUserRequest)
+    -- client.CreateUser calls client.doSync
+      -- calls client.do
+        -- calls client.raw, creates the http request, and returns
+           client.doer.Do(req), which actually does the request
+       
+  -- response / error is printed, optionally formatted in json
+
+### snap command Client object:
+cmd/snap/main.go
+. Client is a function defined in this package, which instantiates a client.Client()
+. calling Client() returns client.New(&clientConfig)
+
+client type:
+	type Client struct {
+	    baseURL url.URL
+	    doer    doer
+	}
 
 

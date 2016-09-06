@@ -1,0 +1,37 @@
+####### setting up:
+# install go 1.7:
+http://tecadmin.net/install-go-on-ubuntu/
+cd /tmp && wget https://storage.googleapis.com/golang/go1.7.linux-amd64.tar.gz
+sudo tar -xvf go1.7.linux-amd64.tar.gz
+sudo mv go /usr/local/
+sudo ln -s /usr/local/go/bin/go /usr/local/bin/go
+
+## add to ~/.bashrc
+export GOROOT=/usr/local/go
+export GOPATH=~/go
+export PATH=$GOPATH/bin:$PATH
+
+# get source / build
+mkdir -p ~/go/src && \
+  git clone https://camlistore.googlesource.com/camlistore
+
+cd ~/go/src/camlistore && \
+  go run make.go
+
+# set up s3 bucket / user with appropriate permissions
+
+# add api key/secret to ~/.config/camlistore/server-config.json
+
+# set up mysql database:
+sudo apt install mysql-server
+
+
+# db setup
+echo "create user 'camlistore'@'localhost' identified by 'ohsh7Shi'" | mysql -u root -p
+echo "grant all privileges on *.* to 'camlistore'@'localhost'" | mysql -u root -p
+
+
+bin/camtool dbinit -user camlistore -password ohsh7Shi -dbname camlistore
+
+# run:
+./bin/camlistored

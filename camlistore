@@ -1,3 +1,9 @@
+## install via go get:
+go get camlistore.org/cmd/...
+go get camlistore.org/server/camlidstored/...
+go get camlistore.org/dev/...
+
+
 ####### setting up:
 # install go 1.7:
 http://tecadmin.net/install-go-on-ubuntu/

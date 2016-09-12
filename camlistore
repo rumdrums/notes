@@ -31,13 +31,60 @@ cd ~/go/src/camlistore && \
 # set up mysql database:
 sudo apt install mysql-server
 
-
 # db setup
-echo "create user 'camlistore'@'localhost' identified by 'ohsh7Shi'" | mysql -u root -p
+echo "create user 'camlistore'@'localhost' identified by 'PASSWORD'" | mysql -u root -p
 echo "grant all privileges on *.* to 'camlistore'@'localhost'" | mysql -u root -p
 
+bin/camtool dbinit -user camlistore -password PASSWORD -dbname camlistore
 
-bin/camtool dbinit -user camlistore -password ohsh7Shi -dbname camlistore
+### for cloudformation template
+. autoscaling group with userdata that runs ansible &/or installs snap version
+. s3 bucket
+. instance profile with permissions to write to bucket
+. alb with certificate support
+	-- configured with proper healthcheck
 
-# run:
-./bin/camlistored
+
+setting up multiple servers in client:
+<SNIP>
+  "servers": {
+    "localhost": {
+      "server": "http://localhost:3179",
+      "auth": "userpass:USER:PASS:+localhost",
+      "default": true
+    },
+    "camlistore-aws": {
+      "server": "https://REMOTE_SITE",
+      "auth": "userpass:USER:PASS",
+      "default": false
+    }
+<SNIP>
+
+# to sync the two:
+./camtool sync --src camlistore-aws --dest localhost
+
+###############
+### example -- creating a folder and putting some pictures in it:
+###############
+
+# create a "folder" (really just a permanode) for my photos:
+folder_permanode=$(camput permanode)
+
+# add some attributes to it:
+# 'title', so it has a title:
+camput attr $folder_permanode Title "2015 Vacation"
+
+# set camliRoot attr on i, so it shows up as a folder and can be accessed as such via various interfaces (eg, fuse filesystem):
+camput attr $folder_permanode camliRoot "2015 Vacation"
+
+# create a permanode for some pics, upload them, and associate them with permanodes:
+find . -name '*jpg' -exec basename '{}' \; | \
+  while read my_pic;
+  do 
+    pic_permanode=$(camput permanode) && \
+    camput attr --add $pic_permanode title $my_pic && \
+    new_pic=$(camput file $my_pic) && \
+    camput attr --add "$pic_permanode" camliContent "$new_pic" && \
+    camput attr --add $folder_permanode "camliPath:$my_pic" "$pic_permanode" && \
+  done
+##################################

@@ -1,0 +1,13 @@
+agent/engine/docker_task_engine.go
+func (engine *DockerTaskEngine) stopContainer(task *api.Task, container *api.Container)
+  -- actually handles the business of stopping containers
+
+agent/engine/docker_container_engine.go
+func (dg *dockerGoClient) pullImage(image string, authData *api.RegistryAuthenticationData)
+  -- pulls containers
+
+
+agent/stats/engine.go
+func (engine *DockerStatsEngine) getContainerMetricsForTask(taskArn string) 
+ -- given a task, gets docker metrics about it
+

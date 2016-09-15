@@ -1,0 +1,11 @@
+# snap systemd service creation:
+snapd/wrappers/services.go
+
+# snapcraft command wrapper generation:
+snapcraft/snapcraft/internal/meta.py 
+
+# snapcraft schema:
+snapcraft/schema/snapcraft.yaml
+
+# snapd doesn't autoconnect network-observe plugin -- this is how you do it:
+snap connect savi:network-observe ubuntu-core:network-observe

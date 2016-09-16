@@ -8,6 +8,19 @@ func (dg *dockerGoClient) pullImage(image string, authData *api.RegistryAuthenti
 
 
 agent/stats/engine.go
+func (engine *DockerStatsEngine) GetInstanceMetrics()
+ -- exported method for getting metrics -- task-level, returns map
+    of container stats
+
 func (engine *DockerStatsEngine) getContainerMetricsForTask(taskArn string) 
  -- given a task, gets docker metrics about it
+ -- for memory:
+   -- memoryStatsSet, err := container.statsQueue.GetMemoryStatsSet()
+
+agent/tcs/client/client.go
+... dunno what tcs is, but this is the only place in the code that actually 
+    calls GetIntanceMetrics -- seems to be for bidirectional communication with aws
+... comments on it here: https://github.com/aws/amazon-ecs-agent/issues/224
+      "This is indeed an ECS API intended only for the Agent's use. ...
+       The Agent calls it via the tcs package here over the client/protocol defined in the wsclient package here."
 

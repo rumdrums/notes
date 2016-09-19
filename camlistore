@@ -99,3 +99,16 @@ camput attr --add $pic_permanode title $my_pic
 new_pic=$(camput file $my_pic)
 camput attr --add "$pic_permanode" camliContent "$new_pic"
 camput attr --add $folder_permanode "camliPath:$my_pic" "$pic_permanode"
+
+
+#### 
+. 45 displayed pics in '2015-vacation'
+. 2 permanodes with no photos assoc'd:
+ -- 20150912_093901.jpg
+ -- 20150925_134502.jpg
+. __lots__ more photos associated with album permanode, though
+
+
+### why is sync throwing this error, when both clearly are using
+### same gpg key?
+Failed to discover keyId for server aws: Get http://camlistore.jamesntina.com:3179: dial tcp 52.22.191.215:3179: getsockopt: connection timed outWARNING: the source server GPG key ID (3DBEA36499A86445) and the destination's () differ. All blobs will be synced, but because the indexer at the other side is indexing claims by a different user, you may not see what you expect in that server's web UI, etc.

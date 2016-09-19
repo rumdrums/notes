@@ -6,7 +6,6 @@ agent/engine/docker_container_engine.go
 func (dg *dockerGoClient) pullImage(image string, authData *api.RegistryAuthenticationData)
   -- pulls containers
 
-
 agent/stats/engine.go
 func (engine *DockerStatsEngine) GetInstanceMetrics()
  -- exported method for getting metrics -- task-level, returns map
@@ -23,4 +22,66 @@ agent/tcs/client/client.go
 ... comments on it here: https://github.com/aws/amazon-ecs-agent/issues/224
       "This is indeed an ECS API intended only for the Agent's use. ...
        The Agent calls it via the tcs package here over the client/protocol defined in the wsclient package here."
+# request logged:
+func (cs *clientServer) MakeRequest(input interface{}) error {
+
+// clientServer implements wsclient.ClientServer interface for metrics backend.
+agent/tcs/client/client.go:type clientServer struct {
+
+// wsclient wraps the generated aws-sdk-go client to provide marshalling
+// and unmarshalling of data over a websocket connection in the format expected
+// by backend. It allows for bidirectional communication and acts as both a
+// client-and-server in terms of requests, but only as a client in terms of
+// connecting.
+
+agent/wsclient/client.go
+func (cs *ClientServerImpl) Connect() error
+ - parse url
+ - instantiate HTTP request object
+ - request is signed and made
+
+func (cs *ClientServerImpl) ConsumeMessages() error 
+ - this is used by both acs and tcs to listen for and 
+   handle incoming requests
+ - calls low-level websocket implementation for messages
+ - ClientServerImpl.handleMessage decodes message and passes
+   message to appropriate handler
+
+- tcs handlers:
+agent/tcs/handler/handler.go
+ - heartbeatHandler
+ - ackPublishMetricHandler
+
+- acs handlers:
+ - refreshCredsHandler
+ - payloadHandler
+  -- I think this is where the majorit of aws -> agent 
+     communication gets handled 
+
+agent/tcs/client/client.go
+ - tcs clientServer object embeds wsclient.ClientServerImpl in it
+ - it also registers the handlers that get called based on incoming messages
+
+engine -- where the meat of the Docker implementation is defined
+. NewTaskEngine returns NewDockerTaskEngine
+
+acs -- similar to tcs in that it's an implementation of the 
+       websocket server/client
+
+########
+### handling acs payload requests:
+########
+agent/acs/handler/acs_handler.go
+ - startACSSession
+ - PayloadRequestHandler object = newPayloadRequestHandler
+ - PayloadRequestHandler.start()
+  -- PayloadRequestHandler.handleMessages()
+    -- read from buffer and pass to PayloadRequestHandler.handleSingleMessage
+      -- handleSingleMessage calls PayloadRequestHandler.addPayloadTasks(payload)
+        -- addPayloadTasks iterates through individual tasks in payload, validates them/converts them to an api.Task, and passes them to PayloadRequestHandler.addTasks
+           -- PayloadRequestHandler.addTasks calls PayloadRequestHandler.taskEngine.AddTask(), which effectively sends the call off to be handled by Docker
+
+ - register PayloadRequestHandler.handlerFunc as request handler
+agent/acs/handler/payload_handler.go
+ - PayloadRequestHandler.handlerFunc just dumps message payloads onto PayloadRequestHandler.messageBuffer
 

@@ -378,3 +378,9 @@ client type:
 	}
 
 
+### how the daemon works:
+. cmd/snapd/main.go initializes daemon
+  d.Init()
+ - initialization process registers routes, among other things 
+. then starts it
+  d.Start()

@@ -16,3 +16,8 @@ snap connect savi:network-observe ubuntu-core:network-observe
 # local plugins
 . code for this in PluginHandler._load_code
 
+snapcraft/main.py
+. main builds options using docopt, passes to run
+. run:
+ - parse args
+

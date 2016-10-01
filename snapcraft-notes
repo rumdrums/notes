@@ -9,3 +9,10 @@ snapcraft/schema/snapcraft.yaml
 
 # snapd doesn't autoconnect network-observe plugin -- this is how you do it:
 snap connect savi:network-observe ubuntu-core:network-observe
+
+# pluginhandler
+. this code primarily called by snapcraft/internal/parts.py
+
+# local plugins
+. code for this in PluginHandler._load_code
+

@@ -112,3 +112,10 @@ camput attr --add $folder_permanode "camliPath:$my_pic" "$pic_permanode"
 ### why is sync throwing this error, when both clearly are using
 ### same gpg key?
 Failed to discover keyId for server aws: Get http://camlistore.jamesntina.com:3179: dial tcp 52.22.191.215:3179: getsockopt: connection timed outWARNING: the source server GPG key ID (3DBEA36499A86445) and the destination's () differ. All blobs will be synced, but because the indexer at the other side is indexing claims by a different user, you may not see what you expect in that server's web UI, etc.
+
+
+
+### DENIALS when running snap:
+Oct 01 08:09:56 ip-172-31-62-97 audit[11927]: AVC apparmor="DENIED" operation="open" profile="snap.camlistore.camlistored" name="/sys/devices/virtual/dmi/id/product_name" pid=11927 comm="camlistored" requested_mask="r" denied_mask="r" fsuid=0 ouid=0
+Oct 01 08:09:56 ip-172-31-62-97 kernel: audit: type=1400 audit(1475309396.354:23): apparmor="DENIED" operation="open" profile="snap.camlistore.camlistored" name="/sys/devices/virtual/dmi/id/product_name" pid=11927 comm="camlistored" requested_mask="r" denied_mask="r" fsuid=0 ouid=0
+Oct 01 08:09:56 ip-172-31-62-97 audit[11936]: AVC apparmor="DENIED" operation="exec" profile="snap.camlistore.camlistored" name="/usr/local/bin/xdg-open" pid=11936 comm="camlistored" requested_mask="x" denied_mask="x" fsuid=0 ouid=0

@@ -389,3 +389,20 @@ client type:
     if err := http.Serve(d.snapdListener, logit(d.router)); err != nil && d.tomb.Err() == tomb.ErrStillAlive {
         return err
     }
+
+
+### process of handling request / response
+
+. handler func / route gets registered
+
+. request for a url with specific path comes in
+
+. request is passed to router via router.ServeHTTP
+
+# assuming:
+. router calls handler
+. somehow it calls the handler's return value's ServeHTTP method
+  -- eg, Response.ServeHTTP()
+
+. this ends up called Command.ServeHTTP, which in turn calls
+  Response.ServeHTTP, which actually marshals the json, writes the response header, and writes the json to the response body

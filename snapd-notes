@@ -380,7 +380,12 @@ client type:
 
 ### how the daemon works:
 . cmd/snapd/main.go initializes daemon
+  d.New(), then
   d.Init()
  - initialization process registers routes, among other things 
 . then starts it
   d.Start()
+  -- does this in a go routine:
+    if err := http.Serve(d.snapdListener, logit(d.router)); err != nil && d.tomb.Err() == tomb.ErrStillAlive {
+        return err
+    }

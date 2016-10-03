@@ -400,9 +400,11 @@ client type:
 . request is passed to router via router.ServeHTTP
 
 # assuming:
-. router calls handler
-. somehow it calls the handler's return value's ServeHTTP method
-  -- eg, Response.ServeHTTP()
+. router calls handler.ServeHTTP() (which is Command.ServeHTTP)
 
-. this ends up called Command.ServeHTTP, which in turn calls
-  Response.ServeHTTP, which actually marshals the json, writes the response header, and writes the json to the response body
+. Command.ServeHTTP calls the actual function
+
+. a response is returned from this
+
+. and the serveHttp method is called on that response
+

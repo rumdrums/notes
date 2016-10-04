@@ -21,3 +21,23 @@ snapcraft/main.py
 . run:
  - parse args
 
+############################
+import snapcraft
+
+
+import inspect
+# list class methods:
+inspect.getmembers(snapcraft.BasePlugin)
+
+# list instance methods:
+a = snapcraft.BasePlugin('barf', {})
+for i in inspect.getmembers(a, predicate=inspect.ismethod): print(i)
+
+import types
+def functions(cls):
+    return [x for x, y in cls.__dict__.items() if type(y) == types.FunctionType]
+
+# no worko:
+def methods(cls):
+    return [x for x, y in cls.__dict__.items() if type(y) == types.MethodType]
+##################

@@ -41,3 +41,39 @@ def functions(cls):
 def methods(cls):
     return [x for x, y in cls.__dict__.items() if type(y) == types.MethodType]
 ##################
+
+### no dependencies -- I think I like this best -- it does ignore 
+### properties, though, but that's probably fine:
+for i in snapcraft.BasePlugin.__dict__: 
+  if 'function' in snapcraft.BasePlugin.__dict__[i].__repr__(): 
+    print(i)
+
+# instance attributes:
+temp_plugin = snapcraft.BasePlugin('base', {})
+for attr in temp_plugin.__dict__:
+    if not attr.startswith('__'): 
+      if 'function' not in temp_plugin.__dict__[attr].__repr__(): 
+        if 'property' not in temp_plugin.__dict__[attr].__repr__(): 
+          print(attr)
+
+# class attributes:
+for attr in snapcraft.BasePlugin.__dict__:
+    if not attr.startswith('__'): 
+      if 'function' not in snapcraft.BasePlugin.__dict__[attr].__repr__(): 
+        if 'property' not in snapcraft.BasePlugin.__dict__[attr].__repr__(): 
+          print(attr)
+
+
+
+snapcraft/internal/parts.py
+self.parts_dir
+
+
+_baseplugin.py
+########### this is how the partdir ( e.g., ./parts/camlistore ) gets
+########### defined for baseplugin ######
+    if project:
+        self.partdir = os.path.join(project.parts_dir, part_dir)
+    else:
+        self.partdir = os.path.join(os.getcwd(), 'parts', part_dir)
+#######################################################################

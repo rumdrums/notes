@@ -54,7 +54,7 @@ for attr in temp_plugin.__dict__:
     if not attr.startswith('__'): 
       if 'function' not in temp_plugin.__dict__[attr].__repr__(): 
         if 'property' not in temp_plugin.__dict__[attr].__repr__(): 
-          print(attr)
+          print(attr, getattr(temp_plugin, attr))
 
 # class attributes:
 for attr in snapcraft.BasePlugin.__dict__:
@@ -77,3 +77,13 @@ _baseplugin.py
     else:
         self.partdir = os.path.join(os.getcwd(), 'parts', part_dir)
 #######################################################################
+
+
+## TODO for init-plugin:
+. schema -- class method
+. instance attrs -- which ones need to be mentioned?
+. what other methods need to be put in ?
+. testing:
+ -- goes here: ./snapcraft/tests/test_commands_initplugin.py
+ -- test bad plugin name fails and raises correct error message
+ -- 

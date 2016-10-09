@@ -79,11 +79,24 @@ _baseplugin.py
 #######################################################################
 
 
+### make example:
+        '        # self.run(["make", ],\n'
+        '        #   cwd=self.builddir, env=self._build_environment())\n'
+        '        # self.run(["make", "test"],\n'
+        '        #   cwd=self.builddir, env=self._build_environment())\n'
+        '        # self.run(["make", "install"],\n'
+        '        #   cwd=self.builddir, env=self._build_environment())\n'
+
+
 ## TODO for init-plugin:
 . schema -- class method
 . instance attrs -- which ones need to be mentioned?
 . what other methods need to be put in ?
+. the 'make' example in comments is probably bad since there
+  is already a 'make' plugin
+. how to link to existing docs/plugin.md file for more info?
+ -- http://snapcraft.io/docs/build-snaps/plugins
 . testing:
  -- goes here: ./snapcraft/tests/test_commands_initplugin.py
  -- test bad plugin name fails and raises correct error message
- -- 
+

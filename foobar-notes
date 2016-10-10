@@ -1,0 +1,87 @@
+class Peg:
+  first_peg = None
+  last_peg = None
+  def __init__(self, idx, pegs):
+    self.peg = pegs[idx]
+    self.pegs = pegs
+    self.denom = None
+    self.numer = None
+    self.ldiff = None
+    self.rdiff = None
+    if idx == 0:
+      Peg.first_peg = self
+      self.rdiff = pegs[1] - self.peg
+      self.max_radius = self.rdiff - 1
+    elif idx == len(pegs) - 1:
+      Peg.last_peg = self
+      self.ldiff = self.peg - pegs[-2]
+      self.max_radius = self.ldiff - 1
+    else:
+      self.ldiff = self.peg - pegs[idx-1]
+      self.rdiff = pegs[idx+1] - self.peg
+      self.max_radius = min( self.rdiff, self.ldiff ) - 1
+    self.max_denom = self.max_radius + 1
+    #self.max_denom = 5000
+    self.max_numer = self.max_denom**2
+    #self.max_numer = 5000
+  def __str__(self):
+    return "peg: %s, numer: %s, denom: %s" % (self.peg, self.numer, self.denom)
+  @classmethod
+  def is_correct_ratio(cls):
+    if Peg.first_peg.denom == Peg.last_peg.denom:
+      if Peg.first_peg.numer == Peg.last_peg.numer * 2:
+        return True
+    return False
+  @classmethod
+  def is_valid_radius(cls, numer, denom):
+    cur_val = float(numer)/denom
+    if (cur_val < 2 or cur_val > 2*Peg.last_peg.max_radius) or cur_val > Peg.first_peg.max_radius:
+      return False
+    return True
+
+
+def init(pegs):
+  new_pegs = []
+  for idx, val in enumerate(pegs):
+    new_pegs.append(Peg(idx, pegs))
+  return new_pegs
+
+
+def test_radii(pegs):
+  pegs[1].denom = pegs[0].denom  
+  pegs[1].numer = (pegs[1].ldiff * pegs[1].denom) - pegs[0].numer
+  if pegs[1].numer > pegs[1].max_numer:
+    return False
+  # last call:
+  if len(pegs) == 2:
+    return Peg.is_correct_ratio()
+  # recurse:
+  return test_radii(pegs[1:])
+    
+
+def results(pegs):
+  denom = 1
+  while denom < Peg.first_peg.max_denom:
+    numer = denom
+    while numer < Peg.first_peg.max_numer:
+      if not Peg.is_valid_radius(numer, denom):
+        numer += 1
+        continue
+      Peg.first_peg.numer = numer
+      Peg.first_peg.denom = denom
+      success = test_radii(pegs)
+      if success:
+        for i in pegs:
+          print(i)
+        return (numer, denom)
+      numer += 1
+    denom += 1
+  return (-1, -1)
+
+def answer(pegs):
+  pegs = init(pegs)
+  return results(pegs)
+
+print(answer([4,30]))
+print(answer([4,30,50]))
+

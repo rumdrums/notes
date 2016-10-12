@@ -100,3 +100,5 @@ _baseplugin.py
  -- goes here: ./snapcraft/tests/test_commands_initplugin.py
  -- test bad plugin name fails and raises correct error message
 
+# to run tests:
+python3 -m unittest snapcraft.tests.test_commands_init_plugin.InitPluginTestCase

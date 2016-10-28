@@ -87,18 +87,27 @@ _baseplugin.py
         '        # self.run(["make", "install"],\n'
         '        #   cwd=self.builddir, env=self._build_environment())\n'
 
+####### if it's worth listing all potentially overrideable methods:
+    for method in snapcraft.BasePlugin.__dict__:
+        if 'function' in snapcraft.BasePlugin.__dict__[method].__repr__():
+            new_plugin_code += ('    {}\n'.format(method))
+############
 
 ## TODO for init-plugin:
-. schema -- class method
 . instance attrs -- which ones need to be mentioned?
 . what other methods need to be put in ?
-. the 'make' example in comments is probably bad since there
+. the 'make' example in comments may be bad since there
   is already a 'make' plugin
 . how to link to existing docs/plugin.md file for more info?
  -- http://snapcraft.io/docs/build-snaps/plugins
 . testing:
  -- goes here: ./snapcraft/tests/test_commands_initplugin.py
- -- test bad plugin name fails and raises correct error message
+ -- figure out how to determine percentage of code covered by tests
 
 # to run tests:
 python3 -m unittest snapcraft.tests.test_commands_init_plugin.InitPluginTestCase
+
+# to get coverage:
+coverage3 run --branch -m unittest snapcraft.tests.test_commands_init_plugin.InitPluginTestCase
+coverage3 report snapcraft/tests/test_commands_init_plugin.py
+

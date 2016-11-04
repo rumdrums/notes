@@ -121,3 +121,21 @@
              u'organization': u'Frontier Communications',
              u'user_type': u'residential'}}
 
+
+
+### importing country json to add country names to existing records based on their 2-letter iso code:
+
+# import country json into collection:
+mongoimport --type json --db ipgeolocator --collection countries --file countries.json --jsonArray
+
+# iterate through one collection and add 'country' field 
+# based on return from querying imported collection:
+use ipgeolocator;
+db.ipgeolocator.find().snapshot().forEach(
+  function(d) {
+    country = db.countries.findOne({Code: d.countrycode},{Name: 1, _id: 0});
+    d.country = country.Name;
+    db.ipgeolocator.save(d);
+  }
+)
+

@@ -1,0 +1,17 @@
+. waf-bad-bot-blocking
+ -- invoked by api gateway
+ -- updates Waf IP Set as passed in env varialbe
+
+. waf-block-bad-behaving
+ -- invoked by sns; will need the sns event policy in place on s3 bucket -- see example cf json file
+
+. waf-reactive-blacklist
+ -- invoked by sns; will need the sns event policy in place on s3 bucket -- see example cf json file
+
+. waf-bad-bot-cleanup
+ ** not provided by aws repo
+ -- invoked by cloudwatch schedule
+
+. waf-tor-blocking
+ -- invoked by cloudwatch schedule
+

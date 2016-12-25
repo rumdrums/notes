@@ -670,5 +670,5 @@ curl -u $AUTH  http://localhost:5000/api/users/8/albums/1
 ]
 
 ### install stuff with browserify
-browserify -t [ babelify --presets [ es2015 react ] ] photo_mapper/static/js/photo_mapper.js -o photo_mapper/static/js/out.js
+browserify -g browserify-css -t [ babelify --presets [ es2015 react ] ] photo_mapper/static/js/photo_mapper.js -o photo_mapper/static/js/bundle.js
 

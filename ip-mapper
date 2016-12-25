@@ -139,3 +139,10 @@ db.ipgeolocator.find().snapshot().forEach(
   }
 )
 
+### intermittent error on loading aws server:
+dcmap.js:86 Uncaught TypeError: 
+  Cannot convert undefined or null to object(…)(anonymous function) @ dcmap.js:86s @ d3-queue.v3.min.js:2(anonymous function) @ d3-queue.v3.min.js:2(anonymous function) @ dcmap.js:105(anonymous function) @ d3.min.js:1t @ d3.min.js:1i @ d3.min.js:1
+
+### this code:
+    Object.keys(locations[ip]).forEach(function(item) {
+

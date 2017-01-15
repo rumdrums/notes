@@ -676,3 +676,6 @@ browserify -g browserify-css -t [ babelify --presets [ es2015 react ] ] photo_ma
 # 'scaled' size:
 bundle.js:937 gettingData -- item:  Object {id: "099d80f19947c3a216846f03e10f8bfb", index: 257, full: Object, scaled: null, geo: true}
 bundle.js:943 Uncaught TypeError: Cannot read property 'name' of null
+
+# if selinux nginx denial:
+setsebool httpd_can_network_connect on -P

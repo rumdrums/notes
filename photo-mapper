@@ -672,3 +672,7 @@ curl -u $AUTH  http://localhost:5000/api/users/8/albums/1
 ### install stuff with browserify
 browserify -g browserify-css -t [ babelify --presets [ es2015 react ] ] photo_mapper/static/js/photo_mapper.js -o photo_mapper/static/js/bundle.js
 
+# error encountered on images that don't have 
+# 'scaled' size:
+bundle.js:937 gettingData -- item:  Object {id: "099d80f19947c3a216846f03e10f8bfb", index: 257, full: Object, scaled: null, geo: true}
+bundle.js:943 Uncaught TypeError: Cannot read property 'name' of null

@@ -1,0 +1,21 @@
+Architecture
+. 3 processes
+ 1) . read frame thread
+      -- determine / set resolution
+      -- worry about framerate here?
+      -- metadata:
+        -- time
+        -- resolution
+        -- format
+      -- add to QueueHandler
+    . QueueHandler
+      -- put current image on ImageProcessor and VideoProcessor queues
+ 2) . convert images to video
+     -- read images from queue
+     -- at some point, write to file
+     -- add start, end, and file name to database
+ 3) . get frame from queue thread
+    . determine if in motion
+    . save in-motion start/stop times to database
+
+ 

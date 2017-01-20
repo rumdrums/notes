@@ -146,3 +146,29 @@ dcmap.js:86 Uncaught TypeError:
 ### this code:
     Object.keys(locations[ip]).forEach(function(item) {
 
+
+######################
+### trying to group by both path and method -- not working:
+var d3 = require('d3');
+var crossfilter = require('crossfilter');
+
+var a = [
+  {path: '/', type: 'GET'}, 
+  {path: '/', type: 'GET'}, 
+  {path: '/home', type: 'POST'}, 
+  {path: '/test', type: 'HEAD' }
+];
+
+ndx = crossfilter(a);
+allDim = ndx.dimension(function(d) {
+    return d;
+});
+g = allDim.group(function(d) {return d});
+g.all()
+
+h = allDim.groupAll()
+h.all()
+#######################
+
+
+

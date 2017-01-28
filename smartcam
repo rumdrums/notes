@@ -1,6 +1,10 @@
+TODO
+
+
 Architecture
-. 3 processes
- 1) . read frame thread
+. 4 processes
+ 1) Main process
+ 2) . read frame thread
       -- determine / set resolution
       -- worry about framerate here?
       -- metadata:
@@ -8,14 +12,40 @@ Architecture
         -- resolution
         -- format
       -- add to QueueHandler
-    . QueueHandler
+    . QueueHandler thread
       -- put current image on ImageProcessor and VideoProcessor queues
- 2) . convert images to video
+ 3) . convert images to video
      -- read images from queue
      -- at some point, write to file
      -- add start, end, and file name to database
- 3) . get frame from queue thread
+ 4) . get frame from queue thread
     . determine if in motion
     . save in-motion start/stop times to database
 
- 
+
+motion detection loop
+. current:
+get frame
+set self.current
+if not background or background expired:
+  set self.background
+  write video buffer
+  continue
+if not in motion
+  self._in_motion = self.detect_motion()
+if self._in_motion:
+  self.detect_motion() ### to get contours
+  show image with contours drawn
+  add image to video array
+
+. instead:
+if self.current:
+  self.background = self.current
+  self.current = self.get_frame()
+in_motion = self.detect_motion()
+if in_motion:
+  set self.last_motion_time = self.current.time
+  add self.current to video array
+elif self.motion_timeout()
+  write video buffer
+

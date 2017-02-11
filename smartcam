@@ -49,3 +49,7 @@ if in_motion:
 elif self.motion_timeout()
   write video buffer
 
+# Maybe a clue to video format issues:
+OpenCV: FFMPEG: tag 0x3234706d/'mp42' is not supported with codec id 16 and format 'avi / AVI (Audio Video Interleaved)'
+OpenCV: FFMPEG: fallback to use tag 0x3234504d/'MP42'
+

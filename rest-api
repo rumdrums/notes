@@ -1,0 +1,23 @@
+### From Masse
+
+Document
+. "base archetype"
+. object instance or DB record -- includes fields with values and links to related resources
+. use singular names
+ -- e.g., api.soccer.restapi.org/leagues/seattle
+
+Collection
+. server-managed directory of resources
+. plural noun
+ -- e.g., api.soccer.restapi.org/leagues
+
+Store
+. "client-managed resource repository"
+. plural
+. e.g., /users/1234/favorites/alonso
+ -- 'favorites' is the store in this case
+
+Controller
+. procedural resource -- e.g., an executable function
+. actions that can't be mapped to CRUD operation
+. verb

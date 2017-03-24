@@ -1,0 +1,20 @@
+### get a specific field by partition key:
+aws dynamodb query \
+    --table-name $TABLE \
+    --key-condition-expression "accountId = :name" \
+    --expression-attribute-values  '{":name":{"S":"WINDI"}}'
+
+
+### get all results from a table:
+aws dynamodb scan \
+    --table-name $TABLE 
+
+
+### get filtered results from a table based on nested value:
+aws dynamodb scan \
+    --table-name $TABLE \
+    --filter-expression "#prefs.#language = :value" \
+    --expression-attribute-names '{"#language": "language", "#prefs": "preferences"}' \
+    --expression-attribute-values  '{":value":{"S": "en"}}'
+
+

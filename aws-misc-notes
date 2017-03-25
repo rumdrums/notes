@@ -1,0 +1,23 @@
+  LimitToSpecifiedIPsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+        - Action:
+          - S3:GetObject
+          Sid: PublicReadGetObject
+          Resource: !Sub arn:aws:s3:::${BucketName}/*
+          Effect: Allow
+          Principal: "*"
+        - Action:
+          - S3:GetObject
+          Sid: PublicReadGetObject
+          Effect: Deny
+          Resource: !Sub arn:aws:s3:::${BucketName}/*
+          Principal: "*"
+          Condition:
+            NotIpAddress:
+              aws:SourceIp:
+              - 8.8.8.8
+      Bucket: !Ref Bucket
+

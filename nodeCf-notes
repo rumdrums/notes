@@ -1,0 +1,16 @@
+main:
+. parse cli args
+ -- fail out if environment or stacks not passed
+. load nodeCf config 
+. load filters
+. load nunjucks
+. load global vars
+. load env vars
+. filter stacks to get ones to get deployed
+. add tags
+. validate env vars
+. configure aws
+. create stack objects
+. run command
+
+

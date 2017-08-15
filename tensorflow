@@ -1,3 +1,20 @@
 . tf.app run function defined:
  tensorflow/python/platform/app.py
 
+
+#### where 'num_detections' comes from:
+#### pre-built models presumably have been exported using this util,
+#### and already have a tensor with the name 'num_detections' in them:
+models/object_detection/exporter.py:
+. export_inference_graph()
+. _export_inference_graph(detection_model)
+"""
+  preprocessed_inputs = detection_model.preprocess(inputs)
+  output_tensors = detection_model.predict(preprocessed_inputs)
+  postprocessed_tensors = detection_model.postprocess(output_tensors)
+  outputs = _add_output_tensor_nodes(postprocessed_tensors,
+                                     output_collection_name)
+"""
+. _add_output_tensor_nodes
+ -- postprocessed_tensors.get('num_detections')
+

@@ -3,8 +3,36 @@
 
 
 #### where 'num_detections' comes from:
-#### pre-built models presumably have been exported using this util,
-#### and already have a tensor with the name 'num_detections' in them:
+object_detection/builders/post_processing_builder.py
+, build()
+  non_max_suppressor_fn = _build_non_max_suppressor(
+      post_processing_config.batch_non_max_suppression)
+  return non_max_suppressor_fn, ...
+. def _build_non_max_suppressor(nms_config):
+  non_max_suppressor_fn = functools.partial(
+      post_processing.batch_multiclass_non_max_suppression,
+      score_thresh=nms_config.score_threshold,
+      iou_thresh=nms_config.iou_threshold,
+      max_size_per_class=nms_config.max_detections_per_class,
+      max_total_size=nms_config.max_total_detections)
+  return non_max_suppressor_fn
+
+object_detection/builders/model_builder.py
+. build()
+  -- returns _build_ssd_model()....
+. _build_ssd_model(ssd_config, is_training)
+ -- non_max_suppression_fn, score_conversion_fn = post_processing_builder.build(
+      ssd_config.post_processing)
+
+models/object_detection/meta_architectures/ssd_meta_arch.py
+. SSDMetaArch instantiated with non_max_suppression_function, which
+  is what returns num_detections
+. SSDMetaArch.postprocess()
+  --  (nmsed_boxes, nmsed_scores, nmsed_classes, _,
+       num_detections) = self._non_max_suppression_fn(detection_boxes,
+                                                      detection_scores,
+                                                      clip_window=clip_window)
+
 models/object_detection/exporter.py:
 . export_inference_graph()
 . _export_inference_graph(detection_model)

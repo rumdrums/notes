@@ -1,6 +1,3 @@
-TODO
-
-
 Architecture
 . 4 processes
  1) Main process
@@ -52,4 +49,11 @@ elif self.motion_timeout()
 # Maybe a clue to video format issues:
 OpenCV: FFMPEG: tag 0x3234706d/'mp42' is not supported with codec id 16 and format 'avi / AVI (Audio Video Interleaved)'
 OpenCV: FFMPEG: fallback to use tag 0x3234504d/'MP42'
+
+
+
+# error in docker:
+INFO:__main__:detect_objects: 0:01:01.248011
+ERROR:__main__:exception: [Errno 28] No space left on device
+-- it's a shared memory limitation issue
 

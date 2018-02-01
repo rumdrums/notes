@@ -273,3 +273,11 @@ nan
 0.206981
 0.114101
 0.282632
+
+
+video_writer -> ffmpeg buffer -> chunk writer
+
+rxpy.observable(queue) \
+ ## frame will either be image or None at this point
+ lazily instantiate ffmpeg
+ do appropriate thing with image/none type

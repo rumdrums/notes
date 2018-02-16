@@ -277,7 +277,118 @@ nan
 
 video_writer -> ffmpeg buffer -> chunk writer
 
+
+read from queue:
+  if frame:
+    if no ffmpeg process:
+      instantiate ffmpeg
+    if no api request open:
+      initiate api request
+    write frame
+  if frame is none:
+    close out writer
+
+
+read from queue:
+  if frame:
+
+
 rxpy.observable(queue) \
  ## frame will either be image or None at this point
  lazily instantiate ffmpeg
  do appropriate thing with image/none type
+
+
+###########
+import queue
+import rx
+
+q = queue.Queue()
+
+
+def on_next(it):
+  print(it)
+
+
+def on_err(it):
+  raise it
+
+
+def get_item():
+  while True:
+    try:
+      frame = q.get()
+      yield frame
+    except queue.Empty:
+      continue
+
+
+rx.Observable.from_iterable(get_item()) \
+      .subscribe(
+        on_next,
+        on_err,
+        lambda: print('Complete'))
+
+#########################
+
+
+########################
+import queue
+import rx
+from rx.subjects import Subject
+
+q = queue.Queue()
+
+
+def on_next(it):
+  print(it)
+
+
+def on_err(it):
+  raise it
+
+
+def get_item():
+  while True:
+    try:
+      frame = q.get()
+      yield frame
+    except queue.Empty:
+      continue
+
+subj = Subject()
+
+subj.subscribe(on_next, on_err, lambda: print('Complete'))
+
+
+#########################
+
+
+def t_read(e):
+  with open(e) as f:
+    while True:
+      g = f.read(8000)
+      if len(g) == 0: break
+      print("READ %s bytes" % len(g))
+  print('exiting')
+
+
+
+####################################
+
+import requests
+import os
+
+def gen():
+  for i in range(10):
+    yield os.urandom(100)
+
+def gen2():
+  while True:
+    print('yielding')
+    yield os.urandom(100)
+
+url = "http://i7:8080/videodata"
+#url = "http://zenbook:5000/videodata"
+r = requests.post(url, data=gen2())
+

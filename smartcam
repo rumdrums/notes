@@ -392,3 +392,7 @@ url = "http://i7:8080/videodata"
 #url = "http://zenbook:5000/videodata"
 r = requests.post(url, data=gen2())
 
+## fmmpeg crashing with:
+É8-02-20 05:48:08,198 writing frame
+ffmpeg: error while loading shared libraries: libmmal_core.so: cannot open shared object file: No such file or directory
+

@@ -396,3 +396,17 @@ r = requests.post(url, data=gen2())
 É8-02-20 05:48:08,198 writing frame
 ffmpeg: error while loading shared libraries: libmmal_core.so: cannot open shared object file: No such file or directory
 
+QueueObservable
+
+VideoSubject
+  init:
+    instantiate ffmpeg
+    subscribe HttpObserver?
+  on_next:
+    pipe to ffmpeg
+  on_completed:
+
+HttpObserver
+  init:
+  on_next:
+  on_completed:

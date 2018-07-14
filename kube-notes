@@ -1,0 +1,32 @@
+export KOPS_STATE_STORE=s3://kube.jaymell.net
+kops create cluster \
+  --zones=us-east-1c \
+  --channel "stable" \
+  useast1.kube.jaymell.net
+
+kops edit cluster useast1.kube.jaymell.net
+kops update cluster useast1.kube.jaymell.net --yes
+kops rolling-update cluster
+
+# change node properties:
+kops edit ig nodes
+
+# change master properties:
+kops edit ig master-us-east-1c
+
+kops validate cluster
+
+kubectl run kubernetes-bootcamp --image=gcr.io/google-samples/kubernetes-bootcamp:v1 --port=8080
+
+# docker logins
+kubectl create secret docker-registry regcred --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
+
+kubectl get deployments --sort-by=.metadata.name
+
+# mongo
+# create service
+kubectl create -f service.yml
+kubectl create -f deploy.yml --record
+kubectl expose deployment mongo-deployment --type=LoadBalancer --name=mongo
+
+54.236.7.205

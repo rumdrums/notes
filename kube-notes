@@ -23,10 +23,68 @@ kubectl create secret docker-registry regcred --docker-server=<your-registry-ser
 
 kubectl get deployments --sort-by=.metadata.name
 
+# change default node/master volume size:
+kops edit ig nodes
+# Add this under spec:
+rootVolumeSize: 20
+kops edit ig master-us-east-1c
+# Add this under spec:
+rootVolumeSize: 20
+
+# change default etcd volume sizes:
+kops edit cluster useast1.kube.jaymell.net
+# Add this to each etcdClusters.etcdMembers array item:
+volumeSize: 5
+.e.g, :
+etcdClusters:
+- etcdMembers:
+  - instanceGroup: master-us-east-1c
+    name: c
+    volumeSize: 5
+  name: main
+- etcdMembers:
+  - instanceGroup: master-us-east-1c
+    name: c
+    volumeSize: 5
+  name: events
+
+
+
 # mongo
 # create service
 kubectl create -f service.yml
 kubectl create -f deploy.yml --record
+# temporary to enable a place to restore to remotely (dumb):
 kubectl expose deployment mongo-deployment --type=LoadBalancer --name=mongo
+mongorestore --db logger ./logger/ --host acd2690568bdd11e88ee20abe3ad70ae-346744967.us-east-1.elb.amazonaws.com
 
-54.236.7.205
+# ipmapper
+kubectl create -f service.yml
+kubectl create -f deploy.yml --record
+kubectl expose deployment ipmapper-deployment --type=LoadBalancer --name=ipmapper
+
+
+# ingress-controller
+kubectl create -f service.yml
+kubectl create -f deploy.yml
+
+
+# helm
+tar xvf helm-v2.10.0-linux-amd64.tar.gz
+cd helm-2.10.0/
+mv linux-amd64/helm ~/bin/
+helm init
+
+
+helm fetch stable/nginx-ingress
+
+# tiller service account
+kubectl create serviceaccount --namespace kube-system tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+
+
+# install helm services
+
+# postgres standalone w/ manifest overrides:
+helm install -n postgresql -f ../../values.yaml .
